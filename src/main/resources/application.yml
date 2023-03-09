@@ -29,6 +29,18 @@ spring:
     h2.console.enabled: false
     sql.init.mode: always
 
+    # Rest Repository 설정
+    # 참고 url : https://supawer0728.github.io/2018/03/20/spring-data-rest/
+    # https://docs.spring.io/spring-data/rest/docs/current/reference/html/
+    data.rest:
+        # http://127.0.0.1:8080/api 입력시 HAL Explorer
+        base-path: /api
+        # default: 모든 public repository. @RestResource의 exported가 false인 경우 제외
+        # all: 가시성, annotation과 상관 없이 모든 repository 노출
+        # annoation: exported가 true이며 @RepositoryRestResource, @RestResource가 달린 자원들을 노출
+        # visibility: public interface만 노출
+        detection-strategy: annotated
+
 ---
 spring:
     config:
