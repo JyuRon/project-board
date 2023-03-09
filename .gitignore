@@ -140,6 +140,9 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 
+### Query dsl
+/src/main/generated
+
 # Editor-based Rest Client
 .idea/httpRequests
 
