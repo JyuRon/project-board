@@ -1,14 +1,19 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>게시판 페이지</title>
 </head>
 <body>
-    <header>
-        header 삽입부
-        <hr>
-    </header>
+    <!--
+        header.html 의 header 요소를 찾아라
+        element 뿐만 아니라 id, class 탬색 또한 가능
+        ~{header :: .header}
+        ~{header :: #header}
+
+        ~{} 문법 또한 header :: header 로 생략 가능, 예시의 경우 footer
+    -->
+    <header th:replace="~{header :: header}"></header>
 
     <main>
         <form>
@@ -66,17 +71,14 @@
                     <td>3</td>
                     <td>4</td>
                     <td>5</td>
-                    <td></td>
+                    <td>next</td>
                 </tr>
             </table>
         </nav>
     </main>
 
 
-    <footer>
-        <hr>
-        footer 삽입부
-    </footer>
+    <footer th:replace="footer :: footer"></footer>
 
 </body>
 </html>
