@@ -40,6 +40,8 @@ spring:
         # annoation: exported가 true이며 @RepositoryRestResource, @RestResource가 달린 자원들을 노출
         # visibility: public interface만 노출
         detection-strategy: annotated
+    thymeleaf3:
+        decoupled-logic: true
 
 ---
 spring:
