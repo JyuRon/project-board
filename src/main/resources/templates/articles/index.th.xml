@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<thlogic>
+    <!--
+        header.html 의 header 요소를 찾아라
+        element 뿐만 아니라 id, class 탬색 또한 가능
+        ~{header :: .header}
+        ~{header :: #header}
+
+        ~{} 문법 또한 header :: header 로 생략 가능, 예시의 경우 footer
+    -->
+    <attr sel="#header" th:replace="~{header :: header}" />
+    <attr sel="#footer" th:replace="footer :: footer" />
+    <!-- <arrt sel="header"></arrt> -->
+</thlogic>
