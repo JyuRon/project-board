@@ -49,6 +49,10 @@ dependencies {
 	// spring configuration processor
 	// 사용자 커스텀 properties 문서 세팅 및 ide 지원 가능
 	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+
+	// spring security 추가
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity5'
 }
 
 tasks.named('test') {
