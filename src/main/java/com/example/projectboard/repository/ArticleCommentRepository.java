@@ -10,12 +10,16 @@ import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
 import org.springframework.data.querydsl.binding.QuerydslBindings;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
+import java.util.List;
+
 @RepositoryRestResource
 public interface ArticleCommentRepository extends
         JpaRepository<ArticleComment,Long>,
         QuerydslPredicateExecutor<ArticleComment>, // 완전히 일치하는 검색이 가능(대소문자 구분 안함)
         QuerydslBinderCustomizer<QArticleComment>  // web 검색시 모든 단어를 입력하지 않기 때문에 이를 위한 커스텀 적용
 {
+    List<ArticleComment> findByArticle_Id(Long articleId);
+
     // QuerydslBinderCustomizer 오버라이드
     @Override
     default void customize(QuerydslBindings bindings, QArticleComment root){

@@ -4,6 +4,8 @@ import com.example.projectboard.domain.Article;
 import com.example.projectboard.domain.QArticle;
 import com.querydsl.core.types.dsl.DateTimeExpression;
 import com.querydsl.core.types.dsl.StringExpression;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
@@ -16,6 +18,7 @@ public interface ArticleRepository extends
         QuerydslPredicateExecutor<Article>, // 완전히 일치하는 검색이 가능(대소문자 구분 안함)
         QuerydslBinderCustomizer<QArticle>  // web 검색시 모든 단어를 입력하지 않기 때문에 이를 위한 커스텀 적용
 {
+    Page<Article> findByTitle(String title, Pageable pageable);
 
     // 참고 url : https://jaime-note.tistory.com/80v
     // QuerydslBinderCustomizer 오버라이드
