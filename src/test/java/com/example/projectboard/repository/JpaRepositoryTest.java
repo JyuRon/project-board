@@ -2,6 +2,7 @@ package com.example.projectboard.repository;
 
 import com.example.projectboard.config.JpaConfig;
 import com.example.projectboard.domain.Article;
+import com.example.projectboard.domain.UserAccount;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,20 +27,25 @@ import static org.junit.jupiter.api.Assertions.*;
 class JpaRepositoryTest {
     private final ArticleRepository articleRepository;
     private final ArticleCommentRepository articleCommentRepository;
+    private final UserAccountRepository userAccountRepository;
+
 
     public JpaRepositoryTest(
             @Autowired ArticleRepository articleRepository,
-            @Autowired ArticleCommentRepository articleCommentRepository
+            @Autowired ArticleCommentRepository articleCommentRepository,
+            @Autowired UserAccountRepository userAccountRepository
     ) {
         this.articleRepository = articleRepository;
         this.articleCommentRepository = articleCommentRepository;
+        this.userAccountRepository = userAccountRepository;
     }
 
     @DisplayName("insert 테스트")
     @Test
     void givenTestData_whenInserting_whenWorksFine(){
         long previousCount = articleRepository.count();
-        Article article = Article.of("new article","new content", "#spring");
+        UserAccount userAccount = userAccountRepository.save(UserAccount.of("jyuka","pw",null,null,null));
+        Article article = Article.of(userAccount,"new article","new content", "#spring");
 
         Article save = articleRepository.save(article);
 

@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Getter
-@ToString
+@ToString(callSuper = true) // 상속한 부모 클래스의 정보도 포함한다.
 @Table(indexes = {
         @Index(columnList = "content"),
         @Index(columnList = "createdAt"),
@@ -32,6 +32,10 @@ public class ArticleComment extends AuditingFields{
     private Article article; // 게시글 (ID)
 
     @Setter
+    @ManyToOne(optional = false) // 해당 객체에 null 값이 기입될 수 있도록 설정
+    private UserAccount userAccount; // 유저 정보(ID)
+
+    @Setter
     @Column(nullable = false, length = 500)
     private String content; // 본문
 
@@ -39,13 +43,14 @@ public class ArticleComment extends AuditingFields{
     protected ArticleComment() {
     }
 
-    private ArticleComment(Article article, String content) {
+    private ArticleComment(Article article, UserAccount userAccount, String content) {
+        this.userAccount = userAccount;
         this.article = article;
         this.content = content;
     }
 
-    public static ArticleComment of(Article article, String content){
-        return new ArticleComment(article, content);
+    public static ArticleComment of(Article article, UserAccount userAccount, String content){
+        return new ArticleComment(article, userAccount, content);
     }
 
     @Override

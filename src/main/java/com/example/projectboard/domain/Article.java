@@ -1,13 +1,6 @@
 package com.example.projectboard.domain;
 
 import lombok.*;
-import org.springframework.core.annotation.Order;
-import org.springframework.data.annotation.CreatedBy;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedBy;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
@@ -15,7 +8,7 @@ import java.util.Objects;
 import java.util.Set;
 
 @Getter
-@ToString
+@ToString(callSuper = true) // 상속한 부모 클래스의 정보도 포함한다.
 @Table(indexes = {
         @Index(columnList = "title"),
         @Index(columnList = "hashtag"),
@@ -30,6 +23,10 @@ public class Article extends AuditingFields{
     private Long id;
 
     @Setter
+    @ManyToOne(optional = false) // 해당 객체에 null 값이 기입될 수 있도록 설정
+    private UserAccount userAccount; // 유저 정보(ID)
+
+    @Setter
     @Column(nullable = false)
     private String title; // 제목
     @Setter
@@ -40,7 +37,7 @@ public class Article extends AuditingFields{
 
 
     @ToString.Exclude
-    @OrderBy("id")
+    @OrderBy("createdAt DESC")
     @OneToMany(mappedBy = "article", cascade = CascadeType.ALL)
     private final Set<ArticleComment> articleComments = new LinkedHashSet<>();
 
@@ -48,14 +45,15 @@ public class Article extends AuditingFields{
     protected Article() {
     }
 
-    private Article(String title, String content, String hashtag) {
+    private Article(UserAccount userAccount, String title, String content, String hashtag) {
+        this.userAccount = userAccount;
         this.title = title;
         this.content = content;
         this.hashtag = hashtag;
     }
 
-    public static Article of(String title, String content, String hashtag) {
-        return new Article(title, content, hashtag);
+    public static Article of(UserAccount userAccount, String title, String content, String hashtag) {
+        return new Article(userAccount, title, content, hashtag);
     }
 
     // id(영속화)가 존재 하지 않다면 모두 다른 객체로 취급
