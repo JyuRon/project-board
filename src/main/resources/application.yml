@@ -3,7 +3,7 @@ management.endpoints.web.exposure.include: "*"
 
 logging:
     level:
-        com.fastcampus.projectboard: debug
+        com.example.projectboard: debug
         org.springframework.web.servlet: debug
         org.hibernate.type.descriptor.sql.BasicBinder: trace
 
@@ -26,6 +26,9 @@ spring:
         properties:
             hibernate.format_sql: true
             hibernate.default_batch_fetch_size: 100
+        # OSIV 끔
+        # 참고 URL : https://ykh6242.tistory.com/entry/JPA-OSIVOpen-Session-In-View%EC%99%80-%EC%84%B1%EB%8A%A5-%EC%B5%9C%EC%A0%81%ED%99%94
+        open-in-view: false
     h2.console.enabled: false
     sql.init.mode: always
 
