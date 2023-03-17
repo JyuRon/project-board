@@ -19,7 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 //@WebMvcTest // RestRepository Auto Configuration 을 불러오지 못해 에러가 발생하여 사용하지 않는다.
 @Disabled("spring data rest 통합테스트는 불필요하므로 제외시킴")
 @DisplayName("Data Rest Test")
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc  // @WebMvcTest 가 없어 직접 지정
 @Transactional // 테스트에서 사용되는 것은 모두 롤백, repository test에는 @DataJpaTest가 사용되었으며 @Transactional 이 붙어 있음
 @SpringBootTest
 public class DataRestTest {
