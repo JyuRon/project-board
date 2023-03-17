@@ -2,6 +2,7 @@ package com.example.projectboard.service;
 
 import com.example.projectboard.domain.Article;
 import com.example.projectboard.domain.ArticleComment;
+import com.example.projectboard.domain.UserAccount;
 import com.example.projectboard.dto.ArticleCommentDto;
 import com.example.projectboard.repository.ArticleCommentRepository;
 import com.example.projectboard.repository.ArticleRepository;
@@ -39,8 +40,9 @@ class ArticleCommentServiceTest {
     void givenArticleId_whenSearchingArticleComments_thenReturnsArticleComments(){
         //Given
         Long articleId = 1L;
+        UserAccount userAccount = UserAccount.of("jyuka","pw",null,null,null);
         given(articleRepository.findById(articleId))
-                .willReturn(Optional.of(Article.of("title","content","#java")));
+                .willReturn(Optional.of(Article.of(userAccount,"title","content","#java")));
 
 
         //When
