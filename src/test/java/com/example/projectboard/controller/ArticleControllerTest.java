@@ -1,17 +1,33 @@
 package com.example.projectboard.controller;
 
 import com.example.projectboard.config.SecurityConfig;
+import com.example.projectboard.dto.ArticleWithCommentsDto;
+import com.example.projectboard.dto.UserAccountDto;
+import com.example.projectboard.service.ArticleService;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDateTime;
+import java.util.Set;
+
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
@@ -22,6 +38,9 @@ class ArticleControllerTest {
 
     private final MockMvc mvc;
 
+    @MockBean // 생성자 지원을 하지 않음
+    private ArticleService articleService;
+
     // 실제 코드에서는 @Autowired를 생략이 가능하지만 테스트 코드의 경우 명시해줘야함
     public ArticleControllerTest(@Autowired MockMvc mvc) {
         this.mvc = mvc;
@@ -31,6 +50,8 @@ class ArticleControllerTest {
     @Test
     void givenNothing_whenRequestingArticlesView_thenReturnsArticlesView() throws Exception {
         // given
+        // ArgumentMatchers 를 사용하게 된다면 모든 매개변수가 ArgumentMatchers 를 사용해야 한다.
+        given(articleService.searchArticles(eq(null), eq(null), any(Pageable.class))).willReturn(Page.empty());
 
         // when & then
         mvc.perform(get("/articles"))
@@ -40,21 +61,26 @@ class ArticleControllerTest {
                 .andExpect(view().name("articles/index"))
                 .andExpect(model().attributeExists("articles"))
                 ;
+        then(articleService).should().searchArticles(eq(null), eq(null), any(Pageable.class));
     }
 
     @DisplayName("[view][GET} 게시글 상세 페이지 - 정상 호출")
     @Test
     void givenNothing_whenRequestingArticleView_thenReturnsArticleView() throws Exception {
         // given
+        Long articleId = 1L;
+        given(articleService.getArticle(articleId)).willReturn(createArticleWithCommentDto());
 
         // when & then
-        mvc.perform(get("/articles/1"))
+        mvc.perform(get("/articles/" + articleId))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
                 .andExpect(view().name("articles/detail"))
                 .andExpect(model().attributeExists("article"))
                 .andExpect(model().attributeExists("articleComments"))
         ;
+
+        then(articleService).should().getArticle(articleId);
     }
 
     @Disabled("구현 중")
@@ -83,6 +109,36 @@ class ArticleControllerTest {
                 .andExpect(view().name("articles/search-hashtag"))
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
         ;
+    }
+
+    private ArticleWithCommentsDto createArticleWithCommentDto(){
+        return ArticleWithCommentsDto.of(
+                1L,
+                createUserAccountDto(),
+                Set.of(),
+                "title",
+                "content",
+                "#java",
+                LocalDateTime.now(),
+                "jyuka",
+                LocalDateTime.now(),
+                "jyuka"
+        );
+    }
+
+    private UserAccountDto createUserAccountDto(){
+        return UserAccountDto.of(
+                1L,
+                "jyuka",
+                "pw",
+                "jyuka@mail.com",
+                "jyuka",
+                "memo",
+                LocalDateTime.now(),
+                "jyuka",
+                LocalDateTime.now(),
+                "jyuka"
+        );
     }
 
 }
