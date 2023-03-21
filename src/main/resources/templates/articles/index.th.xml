@@ -11,4 +11,20 @@
     <attr sel="#header" th:replace="~{header :: header}" />
     <attr sel="#footer" th:replace="footer :: footer" />
     <!-- <arrt sel="header"></arrt> -->
+
+    <attr sel="#article-table">
+        <!--
+            tbody 내에 th 태그를 모드 지운다, 단 첫번째만 제외하고
+            https://www.thymeleaf.org/doc/tutorials/3.0/usingthymeleaf.html#using-theach
+        -->
+        <attr sel="tbody" th:remove="all-but-first">
+            <!-- th:each 반복문 -->
+            <attr sel="tr[0]" th:each="article : ${articles}">
+                <attr sel="td.title/a" th:text="${article.title}" th:href="@{'/articles/' + ${article.id}}" />
+                <attr sel="td.hashtag" th:text="${article.hashtag}" />
+                <attr sel="td.user-id" th:text="${article.nickname}" />
+                <attr sel="td.created-at/time" th:datetime="${article.createdAt}" th:text="${#temporals.format(article.createdAt, 'yyyy-MM-dd')}" />
+            </attr>
+        </attr>
+    </attr>
 </thlogic>
