@@ -18,7 +18,11 @@ public interface ArticleRepository extends
         QuerydslPredicateExecutor<Article>, // 완전히 일치하는 검색이 가능(대소문자 구분 안함)
         QuerydslBinderCustomizer<QArticle>  // web 검색시 모든 단어를 입력하지 않기 때문에 이를 위한 커스텀 적용
 {
-    Page<Article> findByTitle(String title, Pageable pageable);
+    Page<Article> findByTitleContaining(String title, Pageable pageable);
+    Page<Article> findByContentContaining(String content, Pageable pageable);
+    Page<Article> findByUserAccount_UserIdContaining(String userId, Pageable pageable);
+    Page<Article> findByUserAccount_NicknameContaining(String nickName, Pageable pageable);
+    Page<Article> findByHashtag(String hashtag, Pageable pageable);
 
     // 참고 url : https://jaime-note.tistory.com/80v
     // QuerydslBinderCustomizer 오버라이드
