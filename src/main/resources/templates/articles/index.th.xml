@@ -13,14 +13,15 @@
     <!-- <arrt sel="header"></arrt> -->
 
 
-    <!-- 게시글 리스트 -->
-    <!--
-           th:href () : query params 로 치환되서 들어가게 된다.
-           ${articles.number} 가 가능한 이유?? return Page<ArticleResponse>인데 이때 Page 가 상속받은 인터페이스에 number 가 존재!!
-           *{sort.getOrderFor('title').direction.name} ?? : 자바 메소드를 그대로 사용 가능
-    -->
+
     <attr sel="main" th:object=" ${articles}">
         <attr sel="#article-table">
+            <!-- 테이블 헤더 클릭시 정렬 기능 -->
+            <!--
+                   th:href () : query params 로 치환되서 들어가게 된다.
+                   ${articles.number} 가 가능한 이유?? return Page<ArticleResponse>인데 이때 Page 가 상속받은 인터페이스에 number 가 존재!!
+                   *{sort.getOrderFor('title').direction.name} ?? : 자바 메소드를 그대로 사용 가능
+            -->
             <attr sel="thead/tr">
                 <attr sel="th.title/a" th:text="'제목'" th:href="@{/articles(
                     page=${articles.number},
@@ -45,6 +46,7 @@
             </attr>
 
             <!--
+                게시글 정보 출력
                 tbody 내에 th 태그를 모드 지운다, 단 첫번째만 제외하고
                 https://www.thymeleaf.org/doc/tutorials/3.0/usingthymeleaf.html#using-theach
             -->
