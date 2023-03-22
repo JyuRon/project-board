@@ -14,45 +14,76 @@
 
 
     <!-- 게시글 리스트 -->
-    <attr sel="#article-table">
-        <!--
-            tbody 내에 th 태그를 모드 지운다, 단 첫번째만 제외하고
-            https://www.thymeleaf.org/doc/tutorials/3.0/usingthymeleaf.html#using-theach
-        -->
-        <attr sel="tbody" th:remove="all-but-first">
-            <!-- th:each 반복문 -->
-            <attr sel="tr[0]" th:each="article : ${articles}">
-                <attr sel="td.title/a" th:text="${article.title}" th:href="@{'/articles/' + ${article.id}}" />
-                <attr sel="td.hashtag" th:text="${article.hashtag}" />
-                <attr sel="td.user-id" th:text="${article.nickname}" />
-                <attr sel="td.created-at/time" th:datetime="${article.createdAt}" th:text="${#temporals.format(article.createdAt, 'yyyy-MM-dd')}" />
+    <!--
+           th:href () : query params 로 치환되서 들어가게 된다.
+           ${articles.number} 가 가능한 이유?? return Page<ArticleResponse>인데 이때 Page 가 상속받은 인터페이스에 number 가 존재!!
+           *{sort.getOrderFor('title').direction.name} ?? : 자바 메소드를 그대로 사용 가능
+    -->
+    <attr sel="main" th:object=" ${articles}">
+        <attr sel="#article-table">
+            <attr sel="thead/tr">
+                <attr sel="th.title/a" th:text="'제목'" th:href="@{/articles(
+                    page=${articles.number},
+                    sort='title' + (*{sort.getOrderFor('title')} != null ? (*{sort.getOrderFor('title').direction.name} != 'DESC' ? ',desc':'') :'')
+            )}" />
+                <attr sel="th.hashtag/a" th:text="'해시태그'" th:href="@{/articles(
+                    page=${articles.number},
+                    sort='hashtag' + (*{sort.getOrderFor('hashtag')} != null ? (*{sort.getOrderFor('hashtag').direction.name} != 'DESC' ? ',desc':'') :'')
+            )}" />
+                <!--
+                    실제 dto는 ArticleResponse.nickname 이지만 게시글 조회의 경우
+                    service layer 에서 이루어지기 때문에 UserAccount.userId 사용
+                -->
+                <attr sel="th.user-id/a" th:text="'작성자'" th:href="@{/articles(
+                    page=${articles.number},
+                    sort='userAccount.userId' + (*{sort.getOrderFor('userAccount.userId')} != null ? (*{sort.getOrderFor('userAccount.userId').direction.name} != 'DESC' ? ',desc':'') :'')
+            )}" />
+                <attr sel="th.created-at/a" th:text="'작성일'" th:href="@{/articles(
+                    page=${articles.number},
+                    sort='createdAt' + (*{sort.getOrderFor('createdAt')} != null ? (*{sort.getOrderFor('createdAt').direction.name} != 'DESC' ? ',desc':'') :'')
+            )}" />
             </attr>
+
+            <!--
+                tbody 내에 th 태그를 모드 지운다, 단 첫번째만 제외하고
+                https://www.thymeleaf.org/doc/tutorials/3.0/usingthymeleaf.html#using-theach
+            -->
+            <attr sel="tbody" th:remove="all-but-first">
+                <!-- th:each 반복문 -->
+                <attr sel="tr[0]" th:each="article : ${articles}">
+                    <attr sel="td.title/a" th:text="${article.title}" th:href="@{'/articles/' + ${article.id}}" />
+                    <attr sel="td.hashtag" th:text="${article.hashtag}" />
+                    <attr sel="td.user-id" th:text="${article.nickname}" />
+                    <attr sel="td.created-at/time" th:datetime="${article.createdAt}" th:text="${#temporals.format(article.createdAt, 'yyyy-MM-dd')}" />
+                </attr>
+            </attr>
+        </attr>
+
+        <!-- 페이징 처리 -->
+        <attr sel="#pagination">
+            <!--
+                th:href () : query params 로 치환되서 들어가게 된다.
+                ${articles.number} 가 가능한 이유?? return Page<ArticleResponse>인데 이때 Page 가 상속받은 인터페이스에 number 가 존재!!
+            -->
+            <attr sel="li[0]/a"
+                  th:text="'previous'"
+                  th:href="@{/articles(page=${articles.number - 1})}"
+                  th:class="'page-link' + (${articles.number} <= 0 ? ' disabled' : '')"
+            />
+            <attr sel="li[1]" th:class="page-item" th:each="pageNumber : ${paginationBarNumbers}">
+                <attr sel="a   "
+                      th:text="${pageNumber + 1}"
+                      th:href="@{/articles(page=${pageNumber})}"
+                      th:class="'page-link' + (${pageNumber} == ${articles.number} ? ' disabled' : '')"
+                />
+            </attr>
+            <attr sel="li[2]/a"
+                  th:text="'next'"
+                  th:href="@{/articles(page=${articles.number + 1})}"
+                  th:class="'page-link' + (${articles.number} >= ${articles.totalPages - 1} ? ' disabled' : '')"
+            />
         </attr>
     </attr>
 
-    <!-- 페이징 처리 -->
-    <attr sel="#pagination">
-        <!--
-            th:href () : query params 로 치환되서 들어가게 된다.
-            ${articles.number} 가 가능한 이유?? return Page<ArticleResponse>인데 이때 Page 가 상속받은 인터페이스에 number 가 존재!!
-        -->
-        <attr sel="li[0]/a"
-              th:text="'previous'"
-              th:href="@{/articles(page=${articles.number - 1})}"
-              th:class="'page-link' + (${articles.number} <= 0 ? ' disabled' : '')"
-        />
-        <attr sel="li[1]" th:class="page-item" th:each="pageNumber : ${paginationBarNumbers}">
-            <attr sel="a   "
-                  th:text="${pageNumber + 1}"
-                  th:href="@{/articles(page=${pageNumber})}"
-                  th:class="'page-link' + (${pageNumber} == ${articles.number} ? ' disabled' : '')"
-            />
-        </attr>
-        <attr sel="li[2]/a"
-              th:text="'next'"
-              th:href="@{/articles(page=${articles.number + 1})}"
-              th:class="'page-link' + (${articles.number} >= ${articles.totalPages - 1} ? ' disabled' : '')"
-        />
-    </attr>
 
 </thlogic>
