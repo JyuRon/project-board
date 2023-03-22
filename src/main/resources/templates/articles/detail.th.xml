@@ -12,6 +12,7 @@
     <attr sel="#footer" th:replace="footer :: footer" />
     <!-- <arrt sel="header"></arrt> -->
 
+    <!-- th:object 사용시 *{}를 사용함으로써 ${article.title} 과 같은 문장을 생략 가능하게 한다. -->
     <attr sel="#article-main" th:object="${article}">
         <attr sel="#article-header/h1" th:text="*{title}" />
         <attr sel="#nickname" th:text="*{nickname}" />
