@@ -12,6 +12,8 @@
     <attr sel="#footer" th:replace="footer :: footer" />
     <!-- <arrt sel="header"></arrt> -->
 
+
+    <!-- 게시글 리스트 -->
     <attr sel="#article-table">
         <!--
             tbody 내에 th 태그를 모드 지운다, 단 첫번째만 제외하고
@@ -27,4 +29,30 @@
             </attr>
         </attr>
     </attr>
+
+    <!-- 페이징 처리 -->
+    <attr sel="#pagination">
+        <!--
+            th:href () : query params 로 치환되서 들어가게 된다.
+            ${articles.number} 가 가능한 이유?? return Page<ArticleResponse>인데 이때 Page 가 상속받은 인터페이스에 number 가 존재!!
+        -->
+        <attr sel="li[0]/a"
+              th:text="'previous'"
+              th:href="@{/articles(page=${articles.number - 1})}"
+              th:class="'page-link' + (${articles.number} <= 0 ? ' disabled' : '')"
+        />
+        <attr sel="li[1]" th:class="page-item" th:each="pageNumber : ${paginationBarNumbers}">
+            <attr sel="a   "
+                  th:text="${pageNumber + 1}"
+                  th:href="@{/articles(page=${pageNumber})}"
+                  th:class="'page-link' + (${pageNumber} == ${articles.number} ? ' disabled' : '')"
+            />
+        </attr>
+        <attr sel="li[2]/a"
+              th:text="'next'"
+              th:href="@{/articles(page=${articles.number + 1})}"
+              th:class="'page-link' + (${articles.number} >= ${articles.totalPages - 1} ? ' disabled' : '')"
+        />
+    </attr>
+
 </thlogic>
