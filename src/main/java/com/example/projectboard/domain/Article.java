@@ -24,6 +24,7 @@ public class Article extends AuditingFields{
 
     @Setter
     @ManyToOne(optional = false) // 해당 객체에 null 값이 기입될 수 있도록 설정
+    @JoinColumn(name = "userId")
     private UserAccount userAccount; // 유저 정보(ID)
 
     @Setter
