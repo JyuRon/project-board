@@ -15,6 +15,9 @@
 
 
     <attr sel="main" th:object=" ${articles}">
+        <!-- form 설정 -->
+        <attr sel="#search-form" th:action="@{/articles}" th:method="get" />
+
         <!-- 검색 기능-->
         <!--
              param의 경우 thymeleaf에서 제공하는 변수로 Request Param 값을 참조 할 수 있게 한다.
@@ -88,6 +91,9 @@
                 </attr>
             </attr>
         </attr>
+
+        <!-- 글쓰기 버튼 동작 -->
+        <attr sel="#write-article" th:href="@{/articles/form}" />
 
         <!-- 페이징 처리 -->
         <attr sel="#pagination">
