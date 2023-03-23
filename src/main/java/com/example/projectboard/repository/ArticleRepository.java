@@ -2,6 +2,7 @@ package com.example.projectboard.repository;
 
 import com.example.projectboard.domain.Article;
 import com.example.projectboard.domain.QArticle;
+import com.example.projectboard.repository.querydsl.ArticleRepositoryCustom;
 import com.querydsl.core.types.dsl.DateTimeExpression;
 import com.querydsl.core.types.dsl.StringExpression;
 import org.springframework.data.domain.Page;
@@ -16,7 +17,8 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 public interface ArticleRepository extends
         JpaRepository<Article,Long>,
         QuerydslPredicateExecutor<Article>, // 완전히 일치하는 검색이 가능(대소문자 구분 안함)
-        QuerydslBinderCustomizer<QArticle>  // web 검색시 모든 단어를 입력하지 않기 때문에 이를 위한 커스텀 적용
+        QuerydslBinderCustomizer<QArticle>,  // web 검색시 모든 단어를 입력하지 않기 때문에 이를 위한 커스텀 적용
+        ArticleRepositoryCustom // query dsl 사용을 위한 적용
 {
     Page<Article> findByTitleContaining(String title, Pageable pageable);
     Page<Article> findByContentContaining(String content, Pageable pageable);
