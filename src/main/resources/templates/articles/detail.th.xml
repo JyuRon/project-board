@@ -14,6 +14,7 @@
 
     <!-- th:object 사용시 *{}를 사용함으로써 ${article.title} 과 같은 문장을 생략 가능하게 한다. -->
     <attr sel="#article-main" th:object="${article}">
+        <!-- 게시글 정보 출력 부분 -->
         <attr sel="#article-header/h1" th:text="*{title}" />
         <attr sel="#nickname" th:text="*{nickname}" />
         <attr sel="#email" th:text="*{email}" />
@@ -21,30 +22,42 @@
         <attr sel="#hashtag" th:text="*{hashtag}" />
         <attr sel="#article-content/pre" th:text="*{content}" />
 
+        <!-- 게시글 수정&삭제 버튼 기능 -->
         <attr sel="#article-buttons">
             <attr sel="#delete-article-form" th:action="'/articles/' + *{id} + '/delete'" th:method="post">
                 <attr sel="#update-article" th:href="'/articles/' + *{id} + '/form'" />
             </attr>
         </attr>
 
+        <!-- 댓글 등록 버튼 기능 -->
+        <attr sel=".article-id" th:name="articleId" th:value="*{id}" />
+        <attr sel="#comment-form" th:action="@{/comments/new}" th:method="post">
+            <attr sel="#comment-textbox" th:name="content" />
+        </attr>
+
+        <!-- 댓글 출력 및 댓글 삭제 버튼 -->
         <attr sel="#article-comments" th:remove="all-but-first">
             <attr sel="li[0]" th:each="articleComment : ${articleComments}">
-                <attr sel="div/strong" th:text="${articleComment.nickname}" />
-                <attr sel="div/small/time" th:datetime="${articleComment.createdAt}" th:text="${#temporals.format(articleComment.createdAt, 'yyyy-MM-dd HH:mm:ss')}" />
-                <attr sel="div/p" th:text="${articleComment.content}" />
+                <attr sel="form" th:action="'/comments/' + ${articleComment.id} + '/delete'" th:method="post">
+                    <attr sel="div/strong" th:text="${articleComment.nickname}" />
+                    <attr sel="div/small/time" th:datetime="${articleComment.createdAt}" th:text="${#temporals.format(articleComment.createdAt, 'yyyy-MM-dd HH:mm:ss')}" />
+                    <attr sel="div/p" th:text="${articleComment.content}" />
+                </attr>
             </attr>
         </attr>
 
-    <attr sel="#pagination">
-        <attr sel="ul">
-            <attr sel="li[0]/a"
-                  th:href="*{id} - 1 <= 0 ? '#' : |/articles/*{id - 1}|"
-                  th:class="'page-link' + (*{id} - 1 <= 0 ? ' disabled' : '')"
-            />
-            <attr sel="li[1]/a"
-                  th:href="*{id} + 1 > ${totalCount} ? '#' : |/articles/*{id + 1}|"
-                  th:class="'page-link' + (*{id} + 1 > ${totalCount} ? ' disabled' : '')"
-            />
+        <!-- 댓글 페이징 처리 -->
+        <attr sel="#pagination">
+            <attr sel="ul">
+                <attr sel="li[0]/a"
+                      th:href="*{id} - 1 <= 0 ? '#' : |/articles/*{id - 1}|"
+                      th:class="'page-link' + (*{id} - 1 <= 0 ? ' disabled' : '')"
+                />
+                <attr sel="li[1]/a"
+                      th:href="*{id} + 1 > ${totalCount} ? '#' : |/articles/*{id + 1}|"
+                      th:class="'page-link' + (*{id} + 1 > ${totalCount} ? ' disabled' : '')"
+                />
+            </attr>
         </attr>
     </attr>
 </thlogic>
