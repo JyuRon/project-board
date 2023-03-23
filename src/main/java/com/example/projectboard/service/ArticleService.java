@@ -1,10 +1,12 @@
 package com.example.projectboard.service;
 
 import com.example.projectboard.domain.Article;
-import com.example.projectboard.domain.type.SearchType;
+import com.example.projectboard.domain.UserAccount;
+import com.example.projectboard.domain.constant.SearchType;
 import com.example.projectboard.dto.ArticleDto;
 import com.example.projectboard.dto.ArticleWithCommentsDto;
 import com.example.projectboard.repository.ArticleRepository;
+import com.example.projectboard.repository.UserAccountRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -22,6 +24,7 @@ import java.util.List;
 public class ArticleService {
 
     private final ArticleRepository articleRepository;
+    private final UserAccountRepository userAccountRepository;
 
     @Transactional(readOnly = true)
     public Page<ArticleDto> searchArticles(SearchType searchType, String searchKeyword, Pageable pageable) {
@@ -39,25 +42,33 @@ public class ArticleService {
     }
 
     @Transactional(readOnly = true)
-    public ArticleWithCommentsDto getArticle(long articleId) {
+    public ArticleWithCommentsDto getArticleWithComments(long articleId) {
         return articleRepository.findById(articleId)
                 .map(ArticleWithCommentsDto::from)
                 .orElseThrow(() -> new EntityNotFoundException("게시글이 없습니다 - articleId: " + articleId))
                 ;
     }
 
-    public void saveArticle(ArticleDto dto){
-        articleRepository.save(dto.toEntity());
+    @Transactional(readOnly = true)
+    public ArticleDto getArticle(Long articleId) {
+        return articleRepository.findById(articleId)
+                .map(ArticleDto::from)
+                .orElseThrow(() -> new EntityNotFoundException("게시글이 없습니다 - articleId: " + articleId));
     }
 
-    public void updateArticle(ArticleDto dto) {
+    public void saveArticle(ArticleDto dto){
+        UserAccount userAccount = userAccountRepository.getReferenceById(dto.userAccountDto().userId());
+        articleRepository.save(dto.toEntity(userAccount));
+    }
+
+    public void updateArticle(Long articleId, ArticleDto dto) {
 
         try{
             // 기존에는 findById 를 사용하여 select 쿼리를 한번 호출하고 save 하는 과정을 거침
             // getReferenceById 의 경우 Article Id 가 존재하는 가정하에 실제 테이블을 조회하는 대신 프록시 객체만 가져옴
             // 프록시 객체만 있는 경우 ID 값을 제외한 나머지 값을 사용하기 전까지는 실제 DB 에 액세스 하지 않기 때문에 SELECT 쿼리가 날아가지 않음
             // https://bcp0109.tistory.com/325
-            Article article = articleRepository.getReferenceById(dto.id());
+            Article article = articleRepository.getReferenceById(articleId);
 
             if(dto.title() != null){
                 article.setTitle(dto.title());
@@ -80,6 +91,10 @@ public class ArticleService {
 
     public void deleteArticle(long articleId) {
         articleRepository.deleteById(articleId);
+    }
+
+    public long getArticleCount() {
+        return articleRepository.count();
     }
 
     @Transactional(readOnly = true)
