@@ -1,6 +1,7 @@
 package com.example.projectboard.repository;
 
 import com.example.projectboard.config.JpaConfig;
+import com.example.projectboard.config.SecurityConfig;
 import com.example.projectboard.domain.Article;
 import com.example.projectboard.domain.UserAccount;
 import org.junit.jupiter.api.DisplayName;
@@ -8,21 +9,35 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.AuditorAware;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
-@ActiveProfiles("testdb")
-// @DataJpaTest 사용시 자동으로 지정된 embedded db 의 데이터베이스를 참조
-// 즉 테스트시 h2 db가 아닌 mysql, oracle등을 사용할때 사용 (직접 테스트 디비를 지정하는 방법)
-// 해당 설정은 yml에서 관리가 가능하기 때문에 주석
-//@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+/**
+ * @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+ * @DataJpaTest 사용시 자동으로 지정된 embedded db 의 데이터베이스를 참조
+ * 즉 테스트시 h2 db가 아닌 mysql, oracle등을 사용할때 사용 (직접 테스트 디비를 지정하는 방법)
+ * 해당 설정은 yml에서 관리가 가능하기 때문에 여기서는 사용하지 않는다.
+ */
+
+/**
+ * Auditing 사용 시 SecurityContextHolder에서 사용자 정보를 불러오도록 설정한 이후 문제 발생
+ * insert 에서 createdBy 정보를 불러 오지 못함
+ * @DataJpaTest 사용한 Jpa 에 대한 슬라이스 테스트로 security context 정보를 불러오지 못하기 때문
+ * 기존 @Import(JpaConfig.class) 에서 변경
+ */
+@Import(JpaRepositoryTest.TestJpaConfig.class) //테스트 시 config 클래스를 인식하지 못하기 때문에 추가
 @DisplayName("JPA 연결 테스트")
-@Import(JpaConfig.class) //테스트 시 config 클래스를 인식하지 못하기 때문에 추가
+@ActiveProfiles("testdb")
 @DataJpaTest
 class JpaRepositoryTest {
     private final ArticleRepository articleRepository;
@@ -60,6 +75,7 @@ class JpaRepositoryTest {
     @Test
     void givenTestData_whenUpdating_thenWorksFine(){
         Article article = articleRepository.findById(1L).orElseThrow();
+        System.out.println(article);
         String updateHashtag = "#springboot";
         article.setHashtag(updateHashtag);
 
@@ -110,5 +126,12 @@ class JpaRepositoryTest {
                 ;
     }
 
-
+    @EnableJpaAuditing
+    @TestConfiguration
+    public static class TestJpaConfig{
+        @Bean
+        public AuditorAware<String> auditorAware(){
+            return () -> Optional.of("jyuka");
+        }
+    }
 }
