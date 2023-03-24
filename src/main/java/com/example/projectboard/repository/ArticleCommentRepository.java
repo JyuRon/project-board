@@ -19,6 +19,7 @@ public interface ArticleCommentRepository extends
         QuerydslBinderCustomizer<QArticleComment>  // web 검색시 모든 단어를 입력하지 않기 때문에 이를 위한 커스텀 적용
 {
     List<ArticleComment> findByArticle_Id(Long articleId);
+    void deleteByIdAndUserAccount_UserId(Long articleCommentId, String userId);
 
     // QuerydslBinderCustomizer 오버라이드
     @Override
