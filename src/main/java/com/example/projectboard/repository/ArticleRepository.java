@@ -25,6 +25,7 @@ public interface ArticleRepository extends
     Page<Article> findByUserAccount_UserIdContaining(String userId, Pageable pageable);
     Page<Article> findByUserAccount_NicknameContaining(String nickName, Pageable pageable);
     Page<Article> findByHashtag(String hashtag, Pageable pageable);
+    void deleteByIdAndUserAccount_UserId(Long articleId, String userId);
 
     // 참고 url : https://jaime-note.tistory.com/80v
     // QuerydslBinderCustomizer 오버라이드
