@@ -1,6 +1,7 @@
 package com.example.projectboard.controller;
 
 import com.example.projectboard.config.SecurityConfig;
+import com.example.projectboard.config.TestSecurityConfig;
 import com.example.projectboard.domain.constant.FormStatus;
 import com.example.projectboard.domain.constant.SearchType;
 import com.example.projectboard.dto.ArticleDto;
@@ -23,6 +24,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.TestExecutionEvent;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
@@ -33,15 +37,22 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
 import static org.mockito.Mockito.verify;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-
-@Import({SecurityConfig.class, FormDataEncoder.class}) // // Spring Security 추가 이후 permit all 설정과 관련된 정보를 불러오지 못하여 에러 발생, 이를 해결
+/**
+ * @WebMvcTest 의 경우 Controller 테스트를 진행함과 동시에 Spring Security Layer 까지 동작하게 된다.
+ * 이로 인해 @Import(SecurityConfig.class) 를 추가 하지 않으면 permit 설정을 불러오지 못해 모든 테스트 동작이 에러가 발생하게 된다.
+ * 이후 인증 기능을 구현하게 되면서 permitAll 설정을 바꿔줄 필요가 있었으며 이 과정에서 UserDetailsService 가 호출되는 동작이 발생하게 된다.
+ * 즉 모든 인증,인가가 필요한 작업에 UserDetailsService - userAccountRepository.findById 를 호출하게 되며 이를 위한 Mock 작업이 필요
+ * 이러한 이유로 @Import(SecurityConfig.class) --> @Import(TestSecurityConfig.class) 로 변경
+ */
+@Import({TestSecurityConfig.class, FormDataEncoder.class})
 @DisplayName("View 컨트롤러 - 게시글")
-@WebMvcTest(ArticleController.class) // Controller Test 기법, 특정 클래스 지정 없을 경우 모든 controller 호ㅇ
+@WebMvcTest(ArticleController.class) // Controller Test 기법, 특정 클래스 지정 없을 경우 모든 controller 호출
 class ArticleControllerTest {
 
     private final MockMvc mvc;
@@ -62,7 +73,8 @@ class ArticleControllerTest {
         this.formDataEncoder = formDataEncoder;
     }
 
-    @DisplayName("[view][GET} 게시글 리스트 (게시판) 페이지 - 정상 호출")
+    @WithMockUser // 인증정보를 구분할 필요가 없을때, 인증이 되었다고 signal 을 보내는 것과 동일한 효과
+    @DisplayName("[view][GET} 게시글 리스트 (게시판) 페이지 - 정상 호출, 인증된 사용자 ")
     @Test
     void givenNothing_whenRequestingArticlesView_thenReturnsArticlesView() throws Exception {
         // given
@@ -83,6 +95,22 @@ class ArticleControllerTest {
                 ;
         then(articleService).should().searchArticles(eq(null), eq(null), any(Pageable.class));
         then(paginationService).should().getPaginationBarNumbers(anyInt(),anyInt());
+    }
+
+    @DisplayName("[view][GET] 게시글 페이지 - 인증 없을 땐 로그인 페이지로 이동")
+    @Test
+    void givenNothing_whenRequestingArticlePage_thenRedirectsToLoginPage() throws Exception {
+        //Given
+        long articleId = 1L;
+
+        //When & Then
+        mvc.perform(get("/articles/" + articleId))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrlPattern("**/login"))
+        ;
+
+        then(articleService).shouldHaveNoInteractions();
+
     }
 
     @DisplayName("[view][GET} 게시글 리스트 (게시판) 페이지 - 검색어와 함께 호출")
@@ -147,6 +175,7 @@ class ArticleControllerTest {
         then(paginationService).should().getPaginationBarNumbers(pageable.getPageNumber(), Page.empty().getTotalPages());
     }
 
+    @WithMockUser
     @DisplayName("[view][GET} 게시글 상세 페이지 - 정상 호출")
     @Test
     void givenNothing_whenRequestingArticleView_thenReturnsArticleView() throws Exception {
@@ -171,19 +200,6 @@ class ArticleControllerTest {
         then(articleService).should().getArticleCount();
     }
 
-    @Disabled("구현 중")
-    @DisplayName("[view][GET} 게시글 검색 전용 페이지 - 정상 호출")
-    @Test
-    void givenNothing_whenRequestingArticleSearchView_thenReturnsArticleSearchView() throws Exception {
-        // given
-
-        // when & then
-        mvc.perform(get("/articles/search"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("articles/search"))
-                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
-        ;
-    }
 
     @DisplayName("[view][GET} 게시글 해시태그 검색 페이지 - 정상 호출")
     @Test
@@ -246,6 +262,7 @@ class ArticleControllerTest {
         then(articleService).should().getHashtags();
     }
 
+    @WithMockUser
     @DisplayName("[view][GET] 새 게시글 작성 페이지")
     @Test
     void givenNothing_whenRequesting_thenReturnsNewArticlePage() throws Exception {
@@ -259,6 +276,19 @@ class ArticleControllerTest {
                 .andExpect(model().attribute("formStatus", FormStatus.CREATE));
     }
 
+    /**
+     * post().with(user(BoardPrincipal.of())) 사용하는 다른 방식 또한 존재한다.
+     * SecurityConfig에서 지정한 UserDetailsService 를 사용하게 하는 어노테이션
+     * 단 DB(mock 데이터 포함) 에 사용자 정보가 존재하여야 한다.
+     *
+     * userDetailsServiceBeanName : UserDetailServices 빈을 직접 지정할 수 있다., 생략 가능
+     * setupBefore : 테스트를 실행하기 직전에 이 setUp을 마쳐라!!!
+     */
+    @WithUserDetails(
+            value = "jyukaTest",
+            userDetailsServiceBeanName = "userDetailsService",
+            setupBefore = TestExecutionEvent.TEST_EXECUTION
+    )
     @DisplayName("[view][POST] 새 게시글 등록 - 정상 호출")
     @Test
     void givenNewArticleInfo_whenRequesting_thenSavesNewArticle() throws Exception {
@@ -279,7 +309,23 @@ class ArticleControllerTest {
         then(articleService).should().saveArticle(any(ArticleDto.class));
     }
 
-    @DisplayName("[view][GET] 게시글 수정 페이지")
+    @DisplayName("[view][POST] 게시글 수정 페이지 - 인증 없을 땐 로그인 페이지로 이동")
+    @Test
+    void givenNothing_whenRequesting_thenRedirectsToLoginPage() throws Exception {
+        //Given
+        long articleId = 1L;
+
+        //When & Then
+        mvc.perform(get("/articles/" + articleId + "/form"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrlPattern("**/login"))
+        ;
+
+        then(articleService).shouldHaveNoInteractions();
+    }
+
+    @WithMockUser
+    @DisplayName("[view][GET] 게시글 수정 페이지 - 정상 호출, 인증된 사용자")
     @Test
     void givenNothing_whenRequesting_thenReturnsUpdatedArticlePage() throws Exception {
         // Given
@@ -297,7 +343,14 @@ class ArticleControllerTest {
         then(articleService).should().getArticle(articleId);
     }
 
-    @DisplayName("[view][POST] 게시글 수정 - 정상 호출")
+
+
+    @WithUserDetails(
+            value = "jyukaTest",
+            userDetailsServiceBeanName = "userDetailsService",
+            setupBefore = TestExecutionEvent.TEST_EXECUTION
+    )
+    @DisplayName("[view][POST] 게시글 수정 - 정상 호출, 인증된 사용자")
     @Test
     void givenUpdatedArticleInfo_whenRequesting_thenUpdatesNewArticle() throws Exception {
         // Given
@@ -318,12 +371,18 @@ class ArticleControllerTest {
         then(articleService).should().updateArticle(eq(articleId), any(ArticleDto.class));
     }
 
+    @WithUserDetails(
+            value = "jyukaTest",
+            userDetailsServiceBeanName = "userDetailsService",
+            setupBefore = TestExecutionEvent.TEST_EXECUTION
+    )
     @DisplayName("[view][POST] 게시글 삭제 - 정상 호출")
     @Test
     void givenArticleIdToDelete_whenRequesting_thenDeletesArticle() throws Exception {
         // Given
         long articleId = 1L;
-        willDoNothing().given(articleService).deleteArticle(articleId);
+        String userId = "jyukaTest";
+        willDoNothing().given(articleService).deleteArticle(articleId, userId);
 
         // When & Then
         mvc.perform(
@@ -334,7 +393,7 @@ class ArticleControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(view().name("redirect:/articles"))
                 .andExpect(redirectedUrl("/articles"));
-        then(articleService).should().deleteArticle(articleId);
+        then(articleService).should().deleteArticle(articleId, userId );
     }
 
 
