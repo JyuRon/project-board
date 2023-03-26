@@ -2,7 +2,6 @@ package com.example.projectboard.response;
 
 import com.example.projectboard.dto.ArticleDto;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 public record ArticleResponse(
