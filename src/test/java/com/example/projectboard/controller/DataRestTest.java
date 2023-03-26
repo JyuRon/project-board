@@ -21,11 +21,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc  // @WebMvcTest 가 없어 직접 지정
 @Transactional // 테스트에서 사용되는 것은 모두 롤백, repository test에는 @DataJpaTest가 사용되었으며 @Transactional 이 붙어 있음
 @SpringBootTest
-public class DataRestTest {
+class DataRestTest {
 
     private final MockMvc mvc;
 
-    public DataRestTest(@Autowired MockMvc mvc) {
+    DataRestTest(@Autowired MockMvc mvc) {
         this.mvc = mvc;
     }
 

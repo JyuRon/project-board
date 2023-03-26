@@ -20,7 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(TestSecurityConfig.class) // // Spring Security 추가 이후 permit all 설정과 관련된 정보를 불러오지 못하여 에러 발생, 이를 해결
 @WebMvcTest(Void.class)
 @DisplayName("View 컨트롤러 - 인증")
-public class AuthControllerTest {
+class AuthControllerTest {
     private final MockMvc mvc;
 
     @MockBean
@@ -29,7 +29,7 @@ public class AuthControllerTest {
     private PaginationService paginationService;
 
     // 실제 코드에서는 @Autowired를 생략이 가능하지만 테스트 코드의 경우 명시해줘야함
-    public AuthControllerTest(@Autowired MockMvc mvc) {
+    AuthControllerTest(@Autowired MockMvc mvc) {
         this.mvc = mvc;
     }
 

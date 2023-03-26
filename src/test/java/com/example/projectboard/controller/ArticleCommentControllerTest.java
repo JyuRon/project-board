@@ -38,7 +38,7 @@ class ArticleCommentControllerTest {
 
 
 
-    public ArticleCommentControllerTest(
+    ArticleCommentControllerTest(
             @Autowired MockMvc mvc,
             @Autowired FormDataEncoder formDataEncoder
     ) {

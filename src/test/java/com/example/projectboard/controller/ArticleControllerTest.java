@@ -60,7 +60,7 @@ class ArticleControllerTest {
     private PaginationService paginationService;
 
     // 실제 코드에서는 @Autowired를 생략이 가능하지만 테스트 코드의 경우 명시해줘야함
-    public ArticleControllerTest(
+    ArticleControllerTest(
             @Autowired MockMvc mvc,
             @Autowired FormDataEncoder formDataEncoder
     ) {
