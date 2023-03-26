@@ -93,7 +93,7 @@
         </attr>
 
         <!-- 글쓰기 버튼 동작 -->
-        <attr sel="#write-article" th:href="@{/articles/form}" />
+        <attr sel="#write-article" sec:authorize="isAuthenticated()" th:href="@{/articles/form}" />
 
         <!-- 페이징 처리 -->
         <attr sel="#pagination">

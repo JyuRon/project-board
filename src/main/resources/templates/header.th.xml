@@ -1,5 +1,11 @@
 <?xml version="1.0"?>
 <thlogic>
+    <!-- 메뉴바 출력 -->
     <attr sel="#home" th:href="@{/}" />
     <attr sel="#hashtag" th:href="@{/articles/search-hashtag}" />
+
+    <!-- 로그인, 로그아웃 기능-->
+    <attr sel="#username" sec:authorize="isAuthenticated()" sec:authentication="name" />
+    <attr sel="#login" sec:authorize="!isAuthenticated()" th:href="@{/login}" />
+    <attr sel="#logout" sec:authorize="isAuthenticated()" th:href="@{/logout}" />
 </thlogic>
