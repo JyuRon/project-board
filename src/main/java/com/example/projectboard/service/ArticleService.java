@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -37,7 +38,11 @@ public class ArticleService {
             case CONTENT -> articleRepository.findByContentContaining(searchKeyword, pageable).map(ArticleDto::from);
             case ID -> articleRepository.findByUserAccount_UserIdContaining(searchKeyword, pageable).map(ArticleDto::from);
             case NICKNAME -> articleRepository.findByUserAccount_NicknameContaining(searchKeyword, pageable).map(ArticleDto::from);
-            case HASHTAG -> articleRepository.findByHashtag("#" + searchKeyword, pageable).map(ArticleDto::from);
+            case HASHTAG -> articleRepository.findByHashtagNames(
+                            Arrays.stream(searchKeyword.split(" ")).toList(),
+                            pageable
+                    )
+                    .map(ArticleDto::from);
         };
     }
 
@@ -83,8 +88,6 @@ public class ArticleService {
                     article.setContent(dto.content());
                 }
 
-                // Not Null false 로 방어코드 추가 안함
-                article.setHashtag(dto.hashtag());
 
                 /**
                  * @Transactional 의해 영속성 컨텍스트는 article 의 변화를 감지하여 스스로 update 쿼리를 호출
@@ -113,7 +116,7 @@ public class ArticleService {
             return Page.empty(pageable);
         }
 
-        return articleRepository.findByHashtag(hashtag,pageable).map(ArticleDto::from);
+        return articleRepository.findByHashtagNames(null,pageable).map(ArticleDto::from);
     }
 
     public List<String> getHashtags() {
