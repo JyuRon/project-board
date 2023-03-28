@@ -93,8 +93,8 @@ public class Article extends AuditingFields{
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Article article)) return false;
-        return this.getId() != null && this.getId().equals(article.id);
+        if (!(o instanceof Article that)) return false;
+        return this.getId() != null && this.getId().equals(that.getId());
     }
 
     @Override
