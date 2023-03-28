@@ -1,3 +1,14 @@
+0. mappedBy 정리
+- 보통 연관관계 테이블이 존재하게 된다면 각각 테이블 내의 외래키를 참조하여 연관관계를 호출한다.
+- 각 테이블마다 외래키 추가하여 사용하게 되면 이는 편리성을 제공하기는 하지만 불필요한 자원을 낭비하게 된다.
+- JPA의 경우 특정한 설정이 없다면 각 테이블마다 외래키를 생성한다.(연관 테이블 생성)
+- 이를 위한 설정으로는 mappedBy 가 존재하며 mappedBy 가 설정된 Entity 에서는 외래키를 생성(소유)하지 않는다.
+- 즉 mappedBy 가 존재하게 되면 외래키가 존재하지 않기 때문에 연관 entity 의 select 외에 update, delete 가 불가능하다.
+-   --> 조회 쿼리의 from 확인 결과 외래키를 소유하는 테이블에서 select 가 일어나며 where 의 경우 외래키를 소유하지 않는 테이블의 키본키를 사용
+- 하지만 이와 같이 자신을 참조하는 mappedBy = "parentCommentId" 의 경우 외래키를 생성하지 않았지만 이미 컬럼값으로 존재하게 된다.
+- 이로 인해 수정, 삭제 또한 가능하게 된다.
+
+
 1. Article <-> UserAccount , ArticleComment <-> UserAccount
 - N:1 @ManyToOne 관계로 설정
 - UserAccount 에서는 @OneToMany 등의 설정등을 찾을 수가 없다.
@@ -41,14 +52,25 @@
 
 3. Article <-> ArticleComment
 - 1:N @OneToMany, @ManyToOne 의 관계로 설정
-- Article 에서 mappedBy = "article" 설정으로 인해 외래키는 ArticleComment 에만 존재하게됨
-    @OneToMany(mappedBy = "article", cascade = CascadeType.ALL)
-    private final Set<ArticleComment> articleComments = new LinkedHashSet<>();
-    select * from article_comment where article_id = '{Article 객체의 기본키}'
-
 - 외래키가 존재하는 ArticleComment 에서는 @OneToMay 에 의해 article_comment 테이블에 article_id 컬럼이 추가됨
     @ManyToOne(optional = false)
     private Article article; // 게시글 (ID)
     select * from article_comment ac inner join article a on ac.article_id = a.article_id where ac.id = '{ArticleComment 객체의 기본키}'
 
+- Article 에서 mappedBy = "article" 설정으로 인해 외래키는 ArticleComment 에만 존재하게됨
+- (객체인 경우) mappedBy = "article" 연관관계 ArticleComment 엔티티 article 필드의 기본키로 매핑한다는 의미
+    @OneToMany(mappedBy = "article", cascade = CascadeType.ALL)
+    private final Set<ArticleComment> articleComments = new LinkedHashSet<>();
+    select * from article_comment where article_id = '{Article 객체의 기본키}'
 
+
+4. ArticleComment <-> ArticleComment
+- 댓글, 대댓글의 구현으로 인해 1:N @OneToMany 로 구현
+- (객체가 아닌 경우) mappedBy = "parentCommentId" 연관관계 엔티티의 필드로 매핑한다는 의미
+
+    @Column(updatable = false)
+    private Long parentCommentId; // 부모 댓글 ID
+
+    @OneToMany(mappedBy = "parentCommentId", cascade = CascadeType.ALL)
+    private Set<ArticleComment> childComments = new LinkedHashSet<>();
+    select * from article_comment where parentCommentId = '${Article 객체의 기본키}'
