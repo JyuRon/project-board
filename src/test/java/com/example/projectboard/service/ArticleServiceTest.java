@@ -108,7 +108,8 @@ class ArticleServiceTest {
         String hashtagName = "java";
         Pageable pageable = Pageable.ofSize(20);
         Article expectedArticle = createArticle();
-        given(articleRepository.findByHashtagNames(List.of(hashtagName), pageable)).willReturn(new PageImpl<>(List.of(expectedArticle), pageable, 1));
+        given(articleRepository.findByHashtagNames(List.of(hashtagName), pageable))
+                .willReturn(new PageImpl<>(List.of(expectedArticle), pageable, 1));
 
         // When
         Page<ArticleDto> articles = sut.searchArticlesViaHashtag(hashtagName, pageable);
@@ -314,7 +315,7 @@ class ArticleServiceTest {
         willDoNothing().given(hashtagService).deleteHashtagWithoutArticles(any());
 
         //When
-        sut.deleteArticle( articleId, userId);
+        sut.deleteArticle(articleId, userId);
 
         //then
         // 실제로 해당 메소드가 호출 되었는지 검사
