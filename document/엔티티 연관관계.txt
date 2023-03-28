@@ -1,0 +1,54 @@
+1. Article <-> UserAccount , ArticleComment <-> UserAccount
+- N:1 @ManyToOne 관계로 설정
+- UserAccount 에서는 @OneToMany 등의 설정등을 찾을 수가 없다.
+- 즉 해당 연관관계의 경우 Article, ArticleComment 에서만 참조가 가능하도록 설정되어있다.
+- @ManyToOne 설정 정보 : Article, ArticleComment
+    @ManyToOne(optional = false) // 해당 객체에 null 값이 기입될 수 있도록 설정
+    @JoinColumn(name = "userId")
+    private UserAccount userAccount; // 유저 정보(ID)
+- @JoinColumn 에 의하여 article, article_comment 테이블에 user_id 라는 컬럼이 자동 생성됨
+- article.user_id 값을 사용하여 join 한  user_account 정보를 객체로 저장하게 됨
+
+
+
+2. Article <-> Hashtag
+- N:M @ManyToOne 관계로 설정
+- @JoinColumn 을 사용하지 않으면 해당 연관관계를 위한 테이블이 별도로 생성됨
+- JPA 규격에 맞춰 연관관계 테이블이 자동 생성되어 원하지 않는 컬럼명이 생성될 수 있음
+- 이를 방지하고자 Article 에서 @JoinTable 을 사용
+
+    @JoinTable(
+                name= "article_hashtag",
+                joinColumns = @JoinColumn(name = "articleId"),
+                inverseJoinColumns = @JoinColumn(name = "hashtagId")
+        )
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}) // insert, update 시
+    private Set<Hashtag> hashtags = new LinkedHashSet<>(); // LinkedHashSet : 순서를 유지하기 위함
+
+
+    실제 소유주 Entity 에서 설정한다.
+    @JoinTable(joinColumns) : 주인 Entity의 column 을 입력한다.
+    @JoinTable(inverseJoinColumns) : 연관관계 Entity의 column 을 입력한다.
+
+- Hashtag 에서도 연관관계 설적이 적용됨
+
+    @ManyToMany(mappedBy = "hashtags")
+    Set<Article> articles = new LinkedHashSet<>();
+
+    mappedBy 를 사용하여 hashtag 테이블 내에는 외래키가 존재 하지 않음
+    select * from article_hashtag where hashtag_id = '{Hashtag 객채의 기본키}'
+
+
+3. Article <-> ArticleComment
+- 1:N @OneToMany, @ManyToOne 의 관계로 설정
+- Article 에서 mappedBy = "article" 설정으로 인해 외래키는 ArticleComment 에만 존재하게됨
+    @OneToMany(mappedBy = "article", cascade = CascadeType.ALL)
+    private final Set<ArticleComment> articleComments = new LinkedHashSet<>();
+    select * from article_comment where article_id = '{Article 객체의 기본키}'
+
+- 외래키가 존재하는 ArticleComment 에서는 @OneToMay 에 의해 article_comment 테이블에 article_id 컬럼이 추가됨
+    @ManyToOne(optional = false)
+    private Article article; // 게시글 (ID)
+    select * from article_comment ac inner join article a on ac.article_id = a.article_id where ac.id = '{ArticleComment 객체의 기본키}'
+
+
