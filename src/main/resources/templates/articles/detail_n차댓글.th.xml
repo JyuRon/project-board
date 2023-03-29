@@ -1,0 +1,92 @@
+<?xml version="1.0"?>
+<thlogic>
+    <!--
+        header.html 의 header 요소를 찾아라
+        element 뿐만 아니라 id, class 탬색 또한 가능
+        ~{header :: .header}
+        ~{header :: #header}
+
+        ~{} 문법 또한 header :: header 로 생략 가능, 예시의 경우 footer
+    -->
+    <attr sel="#header" th:replace="~{header :: header}" />
+    <attr sel="#footer" th:replace="footer :: footer" />
+    <!-- <arrt sel="header"></arrt> -->
+
+    <!-- th:object 사용시 *{}를 사용함으로써 ${article.title} 과 같은 문장을 생략 가능하게 한다. -->
+    <attr sel="#article-main" th:object="${article}">
+        <!-- 게시글 정보 출력 부분 -->
+        <attr sel="#article-header/h1" th:text="*{title}" />
+        <attr sel="#nickname" th:text="*{nickname}" />
+        <attr sel="#email" th:text="*{email}" />
+        <attr sel="#created-at" th:datetime="*{createdAt}" th:text="${#temporals.format(article.createdAt, 'yyyy-MM-dd HH:mm:ss')}" />
+        <attr sel="#hashtag" th:each="hashtag : ${article.hashtags}">
+            <attr sel="a"
+                  th:text="'#' + ${hashtag}"
+                  th:href="@{/articles(searchType=${searchTypeHashtag},searchValue=${hashtag})}"
+            />
+        </attr>
+        <attr sel="#article-content/pre" th:text="*{content}" />
+
+        <!-- 게시글 수정&삭제 버튼 기능 -->
+        <attr sel="#article-buttons" th:if="${#authorization.expression('isAuthenticated()')} and *{userId} == ${#authentication.name}">
+            <attr sel="#delete-article-form" th:action="'/articles/' + *{id} + '/delete'" th:method="post">
+                <attr sel="#update-article" th:href="'/articles/' + *{id} + '/form'" />
+            </attr>
+        </attr>
+
+        <!-- 게시글 정보 input:hidden 추가 -->
+        <attr sel=".article-id" th:name="articleId" th:value="*{id}" />
+
+        <!--
+            댓글, 대댓글 등록 버튼 기능
+            댓글, 대댓글 모두 동일한 클래스를 사용하여 댓글 등록을 할 수 있도록 설정
+        -->
+        <attr sel=".comment-form" th:action="@{/comments/new}" th:method="post">
+            <attr sel=".comment-textbox" th:name="content" />
+        </attr>
+
+        <!--
+            N차 댓글 출력 및 댓글 삭제 버튼
+            fragment 선언과 동시에 댓글 출력 작업을 진행
+            classappend : 선택된 element 의 클래스를 이어 쓰기를 한다.
+        -->
+        <attr sel=".article-comments"
+              th:remove="all-but-first"
+              th:fragment="articleComments(childComments)"
+              th:classappend="${childComments} != null ? 'row me-0' : 'row col-md-10 col-lg-8 pt-3'">
+            <!-- (value) ?: (defaultValue) -->
+            <attr sel=".article-comment[0]" th:each="articleComment : ${childComments} ?: ${articleComments}">
+                <attr sel=".comment-delete-form" th:action="'/comments/' + ${articleComment.id} + '/delete'" th:method="post">
+                    <attr sel="div/strong" th:text="${articleComment.nickname}" />
+                    <attr sel="div/small/time" th:datetime="${articleComment.createdAt}" th:text="${#temporals.format(articleComment.createdAt, 'yyyy-MM-dd HH:mm:ss')}" />
+                    <attr sel="div/p" th:text="${articleComment.content}" />
+                    <attr sel="button" th:if="${#authorization.expression('isAuthenticated()')} and ${articleComment.userId} == ${#authentication.name}" />
+                </attr>
+
+                <!--
+                    N+1차 대댓글 출력 및 삭제 버튼
+                    fragment를 재귀호출하는 한다.
+                    unless : false 이면 작업을 수행한다.
+                -->
+                <attr sel=".child-comments" th:unless="${articleComment.childComments.isEmpty}" th:replace=":: articleComments(${articleComment.childComments})" />
+
+                <!-- 부모 댓글 id input:hidden 추가 -->
+                <attr sel=".parent-comment-id" th:name="parentCommentId" th:value="${articleComment.id}" />
+            </attr>
+        </attr>
+
+        <!-- 게시글 페이징 처리 -->
+        <attr sel="#pagination">
+            <attr sel="ul">
+                <attr sel="li[0]/a"
+                      th:href="*{id} - 1 <= 0 ? '#' : |/articles/*{id - 1}|"
+                      th:class="'page-link' + (*{id} - 1 <= 0 ? ' disabled' : '')"
+                />
+                <attr sel="li[1]/a"
+                      th:href="*{id} + 1 > ${totalCount} ? '#' : |/articles/*{id + 1}|"
+                      th:class="'page-link' + (*{id} + 1 > ${totalCount} ? ' disabled' : '')"
+                />
+            </attr>
+        </attr>
+    </attr>
+</thlogic>
