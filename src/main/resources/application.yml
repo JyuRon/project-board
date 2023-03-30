@@ -51,6 +51,7 @@ spring:
     thymeleaf3:
         decoupled-logic: true
     # OAuth2 설정
+    # https://developers.kakao.com/docs/latest/ko/kakaologin/rest-api#request-code
     security:
         oauth2:
             client:
