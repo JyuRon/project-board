@@ -16,9 +16,9 @@ spring:
 #        driver-class-name: com.mysql.cj.jdbc.Driver
 
         # postgres
-        url: jdbc:postgresql://localhost:5432/board
-        username: jyuka
-        password: 1234
+        url: ${LOCAL_DB_URL}
+        username: ${LOCAL_DB_USERNAME}
+        password: ${LOCAL_DB_PASSWORD}
 
         # h2-db
 #        url: jdbc:h2:mem:testdb
@@ -60,8 +60,8 @@ spring:
             client:
                 registration:
                     kakao:
-                        client-id: ${KAKAO_OAUTH_CLIENT_ID} # REST API key
-                        client-secret: ${KAKAO_OAUTH_CLIENT_SECRET} # 보안 - client secret
+                        # client-id: ${KAKAO_OAUTH_CLIENT_ID} # REST API key
+                        # client-secret: ${KAKAO_OAUTH_CLIENT_SECRET} # 보안 - client secret
                         authorization-grant-type: authorization_code # https://oauth.net/2/grant-types/authorization-code/
                         redirect-uri: "{baseUrl}/login/oauth2/code/kakao"
                         client-authentication-method: POST
