@@ -5,7 +5,12 @@
     <attr sel="#hashtag" th:href="@{/articles/search-hashtag}" />
 
     <!-- 로그인, 로그아웃 기능-->
-    <attr sel="#username" sec:authorize="isAuthenticated()" sec:authentication="name" />
+    <attr sel="#username" sec:authorize="isAuthenticated()" sec:authentication="principal.nickname" />
     <attr sel="#login" sec:authorize="!isAuthenticated()" th:href="@{/login}" />
+    <!--
+        OAuth2 경로 Spring Security OAuth 문서 참고
+        https://docs.spring.io/spring-security/reference/reactive/oauth2/login/advanced.html
+    -->
+    <attr sel="#kakao-login" sec:authorize="!isAuthenticated()" th:href="@{/oauth2/authorization/kakao}" />
     <attr sel="#logout" sec:authorize="isAuthenticated()" th:href="@{/logout}" />
 </thlogic>
