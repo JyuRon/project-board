@@ -2,7 +2,9 @@ package com.example.projectboard.config;
 
 import com.example.projectboard.dto.UserAccountDto;
 import com.example.projectboard.dto.security.BoardPrincipal;
+import com.example.projectboard.dto.security.KakaoOAuth2Response;
 import com.example.projectboard.repository.UserAccountRepository;
+import com.example.projectboard.service.UserAccountService;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,13 +15,28 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
+
+import java.util.UUID;
+
+import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 public class SecurityConfig{
     // https://spring.io/blog/2022/02/21/spring-security-without-the-websecurityconfigureradapter
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            OAuth2UserService<OAuth2UserRequest, OAuth2User> oAuth2UserService
+    ) throws Exception {
+        /**
+         * 람다식의 경우 Customizer<?> 의 형태로 감싸져 있어서 사용이 가능하다
+         * 람다식이 아닌 체이닝 메소드로 계속 이어 붙이게 된다면 구분을 and()로 하는 등 코드량이 많아지게 된다.
+         */
         return http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
@@ -31,8 +48,13 @@ public class SecurityConfig{
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
-                .formLogin().and()
-                .logout().logoutSuccessUrl("/").and()
+                .formLogin(withDefaults())
+                .logout(logout -> logout.logoutSuccessUrl("/"))
+                .oauth2Login(oAuth -> oAuth
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(oAuth2UserService)
+                        )
+                )
                 .build();
     }
 
@@ -56,12 +78,55 @@ public class SecurityConfig{
      * @return BoardPrincipal implements UserDetails
      */
     @Bean
-    public UserDetailsService userDetailsService(UserAccountRepository userAccountRepository){
-        return username -> userAccountRepository.findById(username)
-                .map(UserAccountDto::from)
+    public UserDetailsService userDetailsService(UserAccountService userAccountService){
+
+        return username -> userAccountService.searchUser(username)
                 .map(BoardPrincipal::from)
                 .orElseThrow(() -> new UsernameNotFoundException("유저를 찾을 수 없습니다 - username : " + username))
                 ;
+    }
+
+    /**
+     * Spring Security Context Holder 에 저장할 유저 정보를 반환한다.
+     * @return U extends OAuth2User
+     */
+    @Bean
+    public OAuth2UserService<OAuth2UserRequest, OAuth2User> oAuth2UserService(
+            UserAccountService userAccountService,
+            PasswordEncoder passwordEncoder
+    ) {
+        final DefaultOAuth2UserService delegate = new DefaultOAuth2UserService();
+
+        return userRequest -> {
+            OAuth2User oAuth2User = delegate.loadUser(userRequest);
+
+            KakaoOAuth2Response kakaoResponse = KakaoOAuth2Response.from(oAuth2User.getAttributes());
+            String registrationId = userRequest.getClientRegistration().getRegistrationId();
+            String providerId = String.valueOf(kakaoResponse.id());
+            String username = registrationId + "_" + providerId; // kakao_123456
+            String dummyPassword = passwordEncoder.encode("{bcrypt}" + UUID.randomUUID());
+
+            /**
+             * Optional orElse 와 orElseGet 의 차이점
+             * https://ysjune.github.io/posts/java/orelsenorelseget/
+             * orElse 가 사용되지 않은 이유로는 매개변수가 메소드인 경우 orElse 의 인자로 받을때 한번 실행되게 된다.
+             * 즉 메소드를 매개변수로 사용하고 싶다면 orElse 가 아닌 orElseGet 사용이 바람직하다.
+             */
+            return userAccountService.searchUser(username)
+                    .map(BoardPrincipal::from)
+                    .orElseGet(() ->
+                            BoardPrincipal.from(
+                                    userAccountService.saveUser(
+                                            username,
+                                            dummyPassword,
+                                            kakaoResponse.email(),
+                                            kakaoResponse.nickname(),
+                                            null
+                                    )
+                            )
+                    );
+        };
+
     }
 
     @Bean

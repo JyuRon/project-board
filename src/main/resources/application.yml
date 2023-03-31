@@ -52,13 +52,16 @@ spring:
         decoupled-logic: true
     # OAuth2 설정
     # https://developers.kakao.com/docs/latest/ko/kakaologin/rest-api#request-code
+    # 1) 카카오 인증서버에서 로그인에 대한 인증이 완료되면 인가코드를 redirect-url로 전달한다.
+    # 2) redirect-url 에서는 해당 인가코드를 가지고 사용자 정보 호출을 위한 access token 발고 이를 OAuth2UserRequest 에 저장한다.
+    # 3) 이후 OAuth2UserService 에서는 OAuth2UserRequest 의 access token 으로 사용자 정보를 카카오로부터 불러와 SecurityContextHolder 에 저장한다.
     security:
         oauth2:
             client:
                 registration:
                     kakao:
-                        client-id: ${KAKAO_OAUTH_CLIENT_ID}
-                        client-secret: ${KAKAO_OAUTH_CLIENT_SECRET}
+                        client-id: ${KAKAO_OAUTH_CLIENT_ID} # REST API key
+                        client-secret: ${KAKAO_OAUTH_CLIENT_SECRET} # 보안 - client secret
                         authorization-grant-type: authorization_code # https://oauth.net/2/grant-types/authorization-code/
                         redirect-uri: "{baseUrl}/login/oauth2/code/kakao"
                         client-authentication-method: POST
