@@ -8,6 +8,14 @@ logging:
         org.hibernate.type.descriptor.sql.BasicBinder: trace
 
 spring:
+    # https://docs.spring.io/spring-cloud-vault/docs/current/reference/html/#new-in-3.0.0
+    application.name: project-board
+    cloud.vault:
+        scheme: http
+        authentication: TOKEN
+        token: hvs.17SCdADPIW2q7YjrtEj4jgjU
+    # 외부 설정 값을 읽어올때 사용 : vault 설정을 vault 서버로부터 읽어들이겠다.
+    config.import: vault://
     datasource:
         # mysql
 #        url: jdbc:mysql://localhost:3306/board

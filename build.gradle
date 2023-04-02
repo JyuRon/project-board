@@ -18,6 +18,19 @@ repositories {
 	mavenCentral()
 }
 
+// vault 추가
+ext {
+	set('springCloudVersion', "2021.0.6")
+}
+
+// vault 추가
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+	}
+}
+
+
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -58,6 +71,9 @@ dependencies {
 
 	// OAuth2 추가
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
+	// vault 추가
+	implementation 'org.springframework.cloud:spring-cloud-starter-vault-config'
 }
 
 tasks.named('test') {
