@@ -7,6 +7,9 @@ import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeSet;
 
+/**
+ * 댓글 응답 표준 포맷, 아직까지는 컨트롤러가 아닌 곳에서는 @param 을 인식하지 못한다.
+ */
 public record ArticleCommentResponse(
         Long id,
         String content,

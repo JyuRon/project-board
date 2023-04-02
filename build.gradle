@@ -58,6 +58,12 @@ dependencies {
 
 	// OAuth2 추가
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
+	// Swagger UI 추가
+	implementation 'org.springdoc:springdoc-openapi-ui:1.6.12'  // @RestController 를 붙인 것만 스캐닝 하여 보여준다.
+	implementation 'org.springdoc:springdoc-openapi-data-rest:1.6.12' // Rest Repository 를 Swagger UI 에서도 볼 수 있도록 추가 설정
+	implementation 'org.springdoc:springdoc-openapi-javadoc:1.6.12' // Swagger UI 설명을 위해 애노테이션을 붙이면 복잡해지기 때문에 이를 해결하기 위함
+	annotationProcessor 'com.github.therapi:therapi-runtime-javadoc-scribe:0.15.0' // Swagger UI 설명을 위해 애노테이션을 붙이면 복잡해지기 때문에 이를 해결하기 위함
 }
 
 tasks.named('test') {
