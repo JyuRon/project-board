@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.TestComponent;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.BDDMockito.then;
@@ -21,6 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(AuthControllerTest.EmptyController.class) // // Spring Security 추가 이후 permit all 설정과 관련된 정보를 불러오지 못하여 에러 발생, 이를 해결
 @WebMvcTest(Void.class)
 @DisplayName("View 컨트롤러 - 인증")
+@ActiveProfiles("testdb")
 class AuthControllerTest {
     private final MockMvc mvc;
 

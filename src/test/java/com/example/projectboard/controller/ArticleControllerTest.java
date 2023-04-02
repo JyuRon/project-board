@@ -27,6 +27,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.TestExecutionEvent;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.context.support.WithUserDetails;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
@@ -50,6 +51,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import({TestSecurityConfig.class, FormDataEncoder.class})
 @DisplayName("View 컨트롤러 - 게시글")
 @WebMvcTest(ArticleController.class) // Controller Test 기법, 특정 클래스 지정 없을 경우 모든 controller 호출
+@ActiveProfiles("testdb")
 class ArticleControllerTest {
 
     private final MockMvc mvc;
