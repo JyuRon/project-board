@@ -1,4 +1,5 @@
 debug: false
+# actuator end point
 management.endpoints.web.exposure.include: "*"
 
 logging:
