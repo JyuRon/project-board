@@ -1,5 +1,6 @@
 package com.example.projectboard.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -21,6 +22,7 @@ public class UserAccount extends AuditingFields {
     private String userId;
     @Setter
     @Column(nullable = false)
+    @JsonIgnore
     private String userPassword;
 
     @Setter
